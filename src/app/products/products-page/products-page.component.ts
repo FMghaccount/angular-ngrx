@@ -2,33 +2,44 @@ import { Component } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { ProductsPageActions } from '../state/products.actions';
 import {
+  selectProducts,
   selectProductsErrorMessage,
   selectProductsLoading,
-  selectProductsTotal,
   selectProductsShowProductCode,
+  selectProductsTotal,
 } from '../state/products.selectors';
-import { ProductsStore } from '../products.store';
+import { ProductsListComponent } from '../products-list/products-list.component';
+import { NgIf } from '@angular/common';
 
 @Component({
+  standalone: true,
   selector: 'app-products-page',
-  templateUrl: './products-page.component.html',
-  styleUrls: ['./products-page.component.css'],
-  providers: [ProductsStore],
+  imports: [NgIf, ProductsListComponent],
+  template: `
+    <div class="card error-card" *ngIf="errorMessage() !== ''">
+      Error: {{ errorMessage() }}
+    </div>
+    <div *ngIf="!loading(); else loadingElement">
+      <div class="container">
+        <app-products-list
+          [total]="total()"
+          [products]="products()"
+          [showProductCode]="showProductCode()"
+          (toggleProductCode)="toggleShowProductCode()"
+        ></app-products-list>
+      </div>
+    </div>
+    <ng-template #loadingElement>Loading...</ng-template>
+  `,
 })
 export class ProductsPageComponent {
-  products$ = this.productsStore.products$;
-  total$ = this.store.select(selectProductsTotal);
-  loading$ = this.store.select(selectProductsLoading);
-  showProductCode$ = this.store.select(selectProductsShowProductCode);
-  errorMessage$ = this.store.select(selectProductsErrorMessage);
+  products = this.store.selectSignal(selectProducts);
+  total = this.store.selectSignal(selectProductsTotal);
+  showProductCode = this.store.selectSignal(selectProductsShowProductCode);
+  loading = this.store.selectSignal(selectProductsLoading);
+  errorMessage = this.store.selectSignal(selectProductsErrorMessage);
 
-  constructor(private store: Store, private productsStore: ProductsStore) {
-    this.store.subscribe((store) => console.log({ store }));
-  }
-
-  ngOnInit() {
-    this.productsStore.getProducts();
-  }
+  constructor(private store: Store) {}
 
   toggleShowProductCode() {
     this.store.dispatch(ProductsPageActions.toggleShowProductCode());
