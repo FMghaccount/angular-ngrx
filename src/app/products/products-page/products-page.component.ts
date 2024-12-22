@@ -1,9 +1,11 @@
-import { Component, DestroyRef, inject } from '@angular/core';
-import { sumProducts } from 'src/app/utils/sum-products';
-import { Product } from '../product.model';
-import { ProductsService } from '../products.service';
+import { Component } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { Observable } from 'rxjs';
+import { ProductsService } from '../products.service';
+import {
+  ProductsAPIActions,
+  ProductsPageActions,
+} from '../state/products.actions';
+import { Product } from '../product.model';
 
 @Component({
   selector: 'app-products-page',
@@ -11,39 +13,33 @@ import { Observable } from 'rxjs';
   styleUrls: ['./products-page.component.css'],
 })
 export class ProductsPageComponent {
-  products: Product[] = [];
+  products$ = this.store.select((state: any) => state.products.products);
   total = 0;
-  loading = true;
-  showProductCode$: Observable<boolean> | undefined = undefined;
+  loading$ = this.store.select((state: any) => state.products.loading);
+  showProductCode$ = this.store.select(
+    (state: any) => state.products.showProductCode
+  );
   errorMessage = '';
 
-  private _store: Store = inject(Store);
-
-  constructor(private productsService: ProductsService) {}
+  constructor(private productsService: ProductsService, private store: Store) {}
 
   ngOnInit() {
-    this.getShowProductCode();
     this.getProducts();
   }
 
-  getShowProductCode() {
-    this.showProductCode$ = this._store.select(
-      (state: any) => state.products.showProductsCode
-    );
-  }
-
   getProducts() {
+    this.store.dispatch(ProductsPageActions.loadProducts());
     this.productsService.getAll().subscribe({
-      next: (products) => {
-        this.products = products;
-        this.total = sumProducts(products);
-        this.loading = false;
+      next: (products: Product[]) => {
+        this.store.dispatch(
+          ProductsAPIActions.productsLoadedSuccess({ products })
+        );
       },
       error: (error) => (this.errorMessage = error),
     });
   }
 
   toggleShowProductCode() {
-    this._store.dispatch({ type: '[Products Page] Toggle Show Product Code' });
+    this.store.dispatch(ProductsPageActions.toggleShowProductCode());
   }
 }
