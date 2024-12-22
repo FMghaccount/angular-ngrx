@@ -20,7 +20,9 @@ export class ProductPageComponent {
 
   ngOnInit() {
     const productId = parseInt(this.activatedRoute.snapshot.params['id']);
-    this.getProduct(productId);
+    if (productId) {
+      this.getProduct(productId);
+    }
   }
 
   getProduct(id: number) {
