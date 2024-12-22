@@ -6,15 +6,16 @@ export const ProductsPageActions = createActionGroup({
   events: {
     'Toggle Show Product Code': emptyProps(),
     'Load Products': emptyProps(),
-    'Add Product': props<{ product: Product }>(),
-    'Update Product': props<{ product: Product }>(),
-    'Delete Product': props<{ id: number }>(),
+    'Add Product': props<{product: Product}>(),
+    'Update Product': props<{product: Product}>(),
+    'Delete Product': props<{id: number}>(),
   },
 });
 
 export const ProductsAPIActions = createActionGroup({
   source: 'Products API',
   events: {
+    'Load Products': emptyProps(),
     'Products Loaded Success': props<{ products: Product[] }>(),
     'Products Loaded Fail': props<{ message: string }>(),
     'Product Added Success': props<{ product: Product }>(),
